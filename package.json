@@ -1,0 +1,10 @@
+{
+  "name": "statusreact-bot",
+  "version": "1.0.0",
+  "description": "WhatsApp bot StatusReact",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {}
+}
