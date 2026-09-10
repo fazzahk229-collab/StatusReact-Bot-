@@ -1,39 +1,10 @@
 const http = require("http");
-const QRCode = require("qrcode");
 
 const PORT = process.env.PORT || 3000;
 
-let currentQR = null;
-
-const server = http.createServer(async (req, res) => {
-  res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-
-  if (currentQR) {
-    const qrImage = await QRCode.toDataURL(currentQR);
-
-    res.end(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>StatusReact Bot</title>
-      </head>
-      <body style="text-align:center;font-family:Arial;padding:20px">
-        <h2>StatusReact Bot</h2>
-        <p>Scanne ce QR code avec WhatsApp</p>
-        <img src="${qrImage}" style="width:300px;max-width:90%">
-        <p>Actualise la page si le QR expire.</p>
-      </body>
-      </html>
-    `);
-  } else {
-    res.end(`
-      <h2 style="text-align:center;font-family:Arial">
-        StatusReact Bot<br><br>
-        En attente du QR code...
-      </h2>
-    `);
-  }
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
+  res.end("StatusReact Bot fonctionne !");
 });
 
 server.listen(PORT, async () => {
@@ -49,19 +20,14 @@ server.listen(PORT, async () => {
       await useMultiFileAuthState("auth_info");
 
     const sock = makeWASocket({
-      auth: state
+      auth: state,
+      browser: ["Ubuntu", "Chrome", "22.04.4"]
     });
 
     sock.ev.on("creds.update", saveCreds);
 
-    sock.ev.on("connection.update", ({ connection, lastDisconnect, qr }) => {
-      if (qr) {
-        currentQR = qr;
-        console.log("NOUVEAU QR CODE DISPONIBLE");
-      }
-
+    sock.ev.on("connection.update", ({ connection, lastDisconnect }) => {
       if (connection === "open") {
-        currentQR = null;
         console.log("WhatsApp connecté !");
       }
 
@@ -70,6 +36,24 @@ server.listen(PORT, async () => {
         console.log("Connexion WhatsApp fermée. Code :", code);
       }
     });
+
+    if (!state.creds.registered) {
+      const phoneNumber = process.env.WA_PHONE_NUMBER;
+
+      if (!phoneNumber) {
+        console.log("WA_PHONE_NUMBER n'est pas configuré.");
+        return;
+      }
+
+      const cleanNumber = phoneNumber.replace(/\D/g, "");
+
+      console.log("Demande du code d'association...");
+      const code = await sock.requestPairingCode(cleanNumber);
+
+      console.log("================================");
+      console.log("CODE D'ASSOCIATION :", code);
+      console.log("================================");
+    }
 
   } catch (error) {
     console.error("Erreur Baileys :", error);
