@@ -1,13 +1,12 @@
 {
   "name": "statusreact-bot",
   "version": "1.0.0",
-  "description": "WhatsApp bot StatusReact",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "6.7.24",
-    "qrcode-terminal": "^0.12.0"
+    "qrcode": "^1.5.4"
   }
 }
