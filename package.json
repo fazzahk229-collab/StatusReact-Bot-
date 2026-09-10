@@ -7,6 +7,6 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "7.0.0-rc14"
+    "@whiskeysockets/baileys": "6.7.24"
   }
 }
