@@ -1,4 +1,5 @@
 const http = require("http");
+const qrcode = require("qrcode-terminal");
 
 const PORT = process.env.PORT || 3000;
 
@@ -17,16 +18,21 @@ server.listen(PORT, async () => {
       DisconnectReason
     } = await import("@whiskeysockets/baileys");
 
-    const { state, saveCreds } = await useMultiFileAuthState("auth_info");
+    const { state, saveCreds } =
+      await useMultiFileAuthState("auth_info");
 
     const sock = makeWASocket({
-      auth: state,
-      printQRInTerminal: true
+      auth: state
     });
 
     sock.ev.on("creds.update", saveCreds);
 
-    sock.ev.on("connection.update", ({ connection, lastDisconnect }) => {
+    sock.ev.on("connection.update", ({ connection, lastDisconnect, qr }) => {
+      if (qr) {
+        console.log("NOUVEAU QR CODE DISPONIBLE");
+        qrcode.generate(qr, { small: true });
+      }
+
       if (connection === "open") {
         console.log("WhatsApp connecté !");
       }
